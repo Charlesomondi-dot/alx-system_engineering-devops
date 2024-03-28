@@ -1,28 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Updates hostfile to change localhost to 127.0.0.2 and facebook.com to 8.8.8.8
+# (To be run in Docker container; else revert hostfile back)
+# https://web.archive.org/web/20171117023601/http://blog.jonathanargentiero.com/docker-sed-cannot-rename-etcsedl8ysxl-device-or-resource-busy/
 
-# Check if script is running inside Docker
-if grep -q docker /proc/1/cgroup; then
-    echo "Running inside Docker container."
-else
-    echo "This script is intended to be run inside Docker. Exiting."
-    exit 1
-fi
+cp /etc/hosts hosts_tmp
+sed -i s/127.*$/127.0.0.2\\tlocalhost\\n8.8.8.8\\tfacebook.com/g hosts_tmp
+cp -f hosts_tmp /etc/hosts
 
-# Check if script is running with sudo
-if [ "$(id -u)" != "0" ]; then
-    echo "Please run this script with sudo."
-    exit 1
-fi
-
-# Backup /etc/hosts file
-cp /etc/hosts /etc/hosts.bak
-
-# Modify /etc/hosts file
-sed -i 's/localhost$/localhost\n127.0.0.2/g' /etc/hosts
-sed -i 's/facebook.com$/facebook.com\n8.8.8.8/g' /etc/hosts
-
-# Display success message
-echo "Hosts file configured successfully. Changes applied:"
-echo "localhost now resolves to 127.0.0.2"
-echo "facebook.com now resolves to 8.8.8.8"
 

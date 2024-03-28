@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Check if script is running inside Docker
+if grep -q docker /proc/1/cgroup; then
+    echo "Running inside Docker container."
+else
+    echo "This script is intended to be run inside Docker. Exiting."
+    exit 1
+fi
+
+# Check if script is running with sudo
+if [ "$(id -u)" != "0" ]; then
+    echo "Please run this script with sudo."
+    exit 1
+fi
+
+# Backup /etc/hosts file
+cp /etc/hosts /etc/hosts.bak
+
+# Modify /etc/hosts file
+sed -i 's/localhost$/localhost\n127.0.0.2/g' /etc/hosts
+sed -i 's/facebook.com$/facebook.com\n8.8.8.8/g' /etc/hosts
+
+# Display success message
+echo "Hosts file configured successfully. Changes applied:"
+echo "localhost now resolves to 127.0.0.2"
+echo "facebook.com now resolves to 8.8.8.8"
+
